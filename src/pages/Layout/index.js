@@ -7,6 +7,10 @@ import {
 } from '@ant-design/icons'
 import './index.scss'
 import { Outlet, Link, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { observer } from 'mobx-react-lite'
+import { useStore } from '../../store/index'
+import { useNavigate } from 'react-router-dom'
 
 const { Header, Sider } = Layout
 
@@ -26,14 +30,24 @@ const GeekLayout = () => {
     getItem(<Link to="/artical">内容管理</Link>, '/artical', <DiffOutlined />),
     getItem(<Link to="/publish">发布文章</Link>, '/publish', <EditOutlined />),
   ]
+  const { userStore, loginStore } = useStore()
+  useEffect(() => {
+    userStore.getUserInfo()
+  }, [userStore])
+  const navigate = useNavigate()
+  const onLogout = () => {
+    loginStore.loginOut()
+    navigate('/login')
+  }
   return (
     <Layout>
       <Header className="header">
         <div className="logo" />
         <div className="user-info">
-          <span className="user-name">user.name</span>
+          <span className="user-name">id:{userStore.userInfo.id}</span>
+          <span className="user-name">superadmin:winy</span>
           <span className="user-logout">
-            <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消">
+            <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消" onConfirm={onLogout}>
               <LogoutOutlined /> 退出
             </Popconfirm>
           </span>
@@ -56,4 +70,4 @@ const GeekLayout = () => {
   )
 }
 
-export default GeekLayout
+export default observer(GeekLayout)

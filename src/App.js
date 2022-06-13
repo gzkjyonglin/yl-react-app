@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
 // import Login from "./pages/Login"
 import Login from "@/pages/Login"
@@ -7,12 +7,14 @@ import Home from "./pages/Home"
 import Artical from "./pages/Artical"
 import Publish from "./pages/Publish"
 import { AuthRoute } from '@/components/AuthRoute'
-// import { Button } from 'antd'
+import { HistoryRouter, history } from './utils/history'
 
 function App () {
   return (
     // 路由配置
-    <BrowserRouter>
+    // 实现组件外的路由跳转
+    <HistoryRouter history={history}>
+      {/* <BrowserRouter> */}
       <Routes>
         <Route path='/' element={
           <AuthRoute>
@@ -24,8 +26,8 @@ function App () {
         </Route>
         <Route path='/login' element={<Login></Login>}></Route>
       </Routes>
-      {/* <Button type="primary">Primary Button</Button> */}
-    </BrowserRouter>
+      {/* </BrowserRouter> */}
+    </HistoryRouter>
   )
 }
 

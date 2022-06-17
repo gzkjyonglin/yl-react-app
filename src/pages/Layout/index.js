@@ -18,10 +18,10 @@ const GeekLayout = () => {
   const { pathname } = useLocation()
   function getItem (label, key, icon, children, type) {
     return {
+      label,
       key,
       icon,
       children,
-      label,
       type,
     }
   }
@@ -57,6 +57,7 @@ const GeekLayout = () => {
         <Sider width={200} className="site-layout-background">
           <Menu
             defaultSelectedKeys={[pathname]}
+            selectedKeys={[pathname]}
             mode="inline"
             items={items}
             style={{ height: '100%', borderRight: 0 }}

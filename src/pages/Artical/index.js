@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { Card, Breadcrumb, Form, Button, Radio, DatePicker, Select, Table, Tag, Space, Spin } from 'antd'
+import { Link, useNavigate } from 'react-router-dom'
+import { Card, Breadcrumb, Form, Button, Radio, DatePicker, Select, Table, Tag, Space, Spin, Popconfirm, message } from 'antd'
 import 'moment/locale/zh-cn'
 import locale from 'antd/es/date-picker/locale/zh_CN'
 import './index.scss'
@@ -7,11 +7,13 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import img404 from '@/assets/error.png'
 import { http } from '../../utils/http'
 import { useEffect, useState } from 'react'
+// import { history } from '../../utils/history'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 
 const Artical = () => {
+  const [form] = Form.useForm()
   const columns = [
     {
       title: '封面',
@@ -52,13 +54,25 @@ const Artical = () => {
       render: data => {
         return (
           <Space size="middle">
-            <Button type="primary" shape="circle" icon={<EditOutlined />} />
             <Button
               type="primary"
-              danger
               shape="circle"
-              icon={<DeleteOutlined />}
+              icon={<EditOutlined />}
+              onClick={() => toPublish(data)}
             />
+            <Popconfirm
+              title="确认删除该条文章吗?"
+              onConfirm={() => delArticle(data)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button
+                type="primary"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
           </Space>
         )
       }
@@ -83,7 +97,6 @@ const Artical = () => {
   const [params, setParams] = useState({
     page: 1,
     per_page: 10,
-    channel_id: 0,
   })
   const [tbloading, setTbloading] = useState(false)
 
@@ -118,15 +131,36 @@ const Artical = () => {
     // 修改params参数 触发接口再次发起
     setParams(_params)
   }
-  const pageChange = (page, pagesize) => {
-    // 拿到当前页参数 修改params 引起接口更新
-    console.log(page)
-    console.log(pagesize)
-    console.log(params)
-    // const params2 = params
-    // params2.page = page
-    // params2.per_page = pagesize
-    // setParams(params2)
+  // 重置表单
+  const onReset = () => {
+    form.resetFields()
+    setParams({
+      page: 1,
+      per_page: 10,
+    })
+  }
+  // 拿到当前页参数 修改params 引起接口更新
+  const pageChange = (page) => {
+    setParams({
+      ...params,
+      page
+    })
+  }
+  // 删除回调
+  const delArticle = async (data) => {
+    const res = await http.delete(`/mp/articles/${data.id}`)
+    if (res.message === "OK") {
+      message.success('删除成功！')
+    } else {
+      message.error('删除失败！')
+    }
+    onReset()
+  }
+  // 编辑
+  const navigate = useNavigate()
+  const toPublish = (data) => {
+    navigate(`/publish?id=${data.id}`)
+    // history.push(`/publish?id=${data.id}`)
   }
   return (
     <>
@@ -136,17 +170,17 @@ const Artical = () => {
             title={
               <Breadcrumb separator=">">
                 <Breadcrumb.Item>
-                  <Link to="/home">首页</Link>
+                  <Link to="/">首页</Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>内容管理</Breadcrumb.Item>
               </Breadcrumb>
             }
             style={{ marginBottom: 20 }}
           >
-            <Form initialValues={{ status: null }} onFinish={onSearch}>
+            <Form initialValues={{ status: "", channel_id: "" }} onFinish={onSearch} form={form}>
               <Form.Item label="状态" name="status">
                 <Radio.Group>
-                  <Radio value={null}>全部</Radio>
+                  <Radio value={""}>全部</Radio>
                   <Radio value={0}>草稿</Radio>
                   <Radio value={1}>待审核</Radio>
                   <Radio value={2}>审核通过</Radio>
@@ -157,7 +191,6 @@ const Artical = () => {
               <Form.Item label="频道" name="channel_id">
                 <Select
                   placeholder="请选择文章频道"
-                  defaultValue={0}
                   style={{ width: 200 }}
                 >
                   {channels.map(item => (
@@ -177,15 +210,19 @@ const Artical = () => {
                 <Button type="primary" htmlType="submit" style={{ marginLeft: 80 }}>
                   筛选
                 </Button>
+                <Button type="primary" style={{ marginLeft: 80 }} onClick={onReset}>
+                  重置
+                </Button>
               </Form.Item>
             </Form>
           </Card>
           <Card title={`根据筛选条件共查询到 ${article.count} 条结果：`}>
             <Table rowKey="id" columns={columns} dataSource={article.list} loading={tbloading} pagination={{
               position: ['bottomCenter'],
-              defaultCurrent: params.page,
-              defaultPageSize: params.per_page,
+              current: params.page,
+              pageSize: params.per_page,
               total: article.count,
+              showSizeChanger: false,
               onChange: pageChange
             }} />
           </Card>

@@ -10,14 +10,23 @@ function Login () {
   const navigate = useNavigate()
   const [loadings, setLoadings] = useState(false)
   async function onFinish (values) {
-    setLoadings(true)
-    await loginStore.login({
-      mobile: values.mobile,
-      code: values.code
-    })
-    setLoadings(false)
-    navigate('/', { replace: true })
-    message.success('登录成功！')
+    if (values.remember === false) {
+      message.warning('请同意并勾选用户协议和隐私条款！')
+    } else {
+      setLoadings(true)
+      await loginStore.login({
+        mobile: values.mobile,
+        code: values.code
+      })
+      if (loginStore.token) {
+        setLoadings(false)
+        navigate('/', { replace: true })
+        message.success('登录成功！')
+      } else {
+        setLoadings(false)
+        message.error('请检查账号密码是否正确！')
+      }
+    }
   }
   return <div className="login">
     <Card className="login-container">
@@ -43,10 +52,10 @@ function Login () {
         <Form.Item
           name="code"
           rules={[
-            { len: 6, message: '验证码6个字符', validateTrigger: 'onBlur' },
-            { required: true, message: '请输入验证码' }
+            { len: 6, message: '密码为6个字符', validateTrigger: 'onBlur' },
+            { required: true, message: '请输入密码' }
           ]}>
-          <Input size="large" placeholder="请输入验证码" maxLength={6} />
+          <Input size="large" placeholder="请输入密码" maxLength={6} type="password" />
         </Form.Item>
         <Form.Item name="remember" valuePropName="checked">
           <Checkbox className="login-checkbox-label">

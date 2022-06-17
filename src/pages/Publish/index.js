@@ -115,6 +115,7 @@ const Publish = () => {
       setFileList(res.data.cover.images.map(url => {
         return { url }
       }))
+      setImgCount(res.data.cover.type)
       setEditloading(false)
     }
     if (articleId) {
